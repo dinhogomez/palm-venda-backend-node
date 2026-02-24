@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Serviço da API Node.js
+  api:
+    build: .
+    container_name: fvendas-api
+    ports:
+      - "3334:3000"  # Porta da API (ajuste conforme necessário)
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:&fr1g0?2023:5432/luciana
+      # Adicione suas outras variáveis de ambiente aqui
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - fvendas-network
+    volumes:
+      # Para desenvolvimento (remova em produção)
+      - ./src:/app/src
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Banco de dados PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: fvendas-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: &fr1g0?2023  # ⚠️ MUDE ISTO EM PRODUÇÃO
+      POSTGRES_DB: luciana
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fvendas-network
+    restart: unless-stopped
+    # Porta acessível apenas internamente (para acesso externo, descomente)
+    # ports:
+    #   - "5432:5432"
+
+  # pgAdmin para gerenciar o banco de dados (opcional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: fvendas-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: gomez_moraes@outlook.com
+      PGADMIN_DEFAULT_PASSWORD: &fr1g0?2023  # ⚠️ MUDE ISTO EM PRODUÇÃO
+    ports:
+      - "5050:80"  # Acesse em http://localhost:5050
+    depends_on:
+      - db
+    networks:
+      - fvendas-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  fvendas-network:
+    driver: bridge

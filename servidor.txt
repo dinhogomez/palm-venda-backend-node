@@ -1,0 +1,5 @@
+IP:localhost
+Banco:agromina_teste
+
+
+
